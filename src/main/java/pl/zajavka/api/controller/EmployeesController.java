@@ -1,44 +1,37 @@
 package pl.zajavka.api.controller;
 
+import jakarta.persistence.EntityNotFoundException;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.zajavka.api.dto.EmployeeDTO;
+import pl.zajavka.api.dto.EmployeesDTO;
+import pl.zajavka.api.mapper.EmployeeMapper;
+import pl.zajavka.infrastructure.database.repository.EmployeeRepository;
 
 @RestController
-@RequestMapping("/employees")
-public class EmployeesController {
-    // serwisy
-    @PostMapping
-    public ResponseEntity<?> addEmployee(
-            @RequestParam(value = "name") String name,
-            @RequestParam(value = "surname") String surname,
-            @RequestParam(value = "salary") String salary
-    ) {
-        // metoda tworząca i zapisująca do bazy obiekt pracownika
+@RequestMapping(EmployeesController.BASE_PATH)
+@AllArgsConstructor
+class EmployeesController {
+
+    public static final String BASE_PATH = "/employees";
+    public static final String EMPLOYEE_ID = "/{employeeId}";
+    private EmployeeRepository employeeRepository;
+    private EmployeeMapper employeeMapper;
+
+    @GetMapping
+    public EmployeesDTO employeesList() {
+        return EmployeesDTO.of(employeeRepository.findAll().stream()
+                .map(employeeMapper::map)
+                .toList());
     }
 
-    @GetMapping("/{employeeId}")
-    public ResponseEntity<?> showEmployeeDetails(@PathVariable Integer employeeId) {
-        // metoda zwracająca pracownika o zdefiniowanym id
-    }
-
-    @PutMapping("/{employeeId}")
-    public ResponseEntity<?> updateEmployee(
-            @PathVariable Integer employeeId,
-            @RequestParam String name,
-            @RequestParam String surname,
-            @RequestParam String salary
-    ) {
-        // metoda aktualizująca obiekt pracownika
-    }
-
-    @DeleteMapping("/{employeeId}")
-    public ResponseEntity<?> deleteEmployee(@PathVariable Integer employeeId) {
-        // metoda usuwająca pracownika
-    }
-
-    @PatchMapping("/{employeeId}")
-    public ResponseEntity<?> partiallyUpdateEmployee (@PathVariable Integer employeeId) {
-        //metoda dodająca jakiś zasób do pracownika
+    @GetMapping(value = EMPLOYEE_ID)
+    public EmployeeDTO showEmployeeDetails(@PathVariable Integer employeeId) {
+        return employeeRepository.findById(employeeId)
+                .map(employeeMapper::map)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("EmployeeEntity not found, employeeId: [%s]", employeeId)));
     }
 }
 
