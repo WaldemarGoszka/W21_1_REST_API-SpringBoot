@@ -59,6 +59,22 @@ class EmployeesController {
                 .build();
     }
 
+    @PutMapping(EMPLOYEE_ID)
+    public ResponseEntity<?> updateEmployee(
+            @PathVariable Integer employeeId,
+            @Valid @RequestBody EmployeeDTO employeeDTO
+    ) {
+        EmployeeEntity existingEmployee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("EmployeeEntity not found, employeeId: [%s]", employeeId)));
+        existingEmployee.setName(employeeDTO.getName());
+        existingEmployee.setSurname(employeeDTO.getSurname());
+        existingEmployee.setSalary(employeeDTO.getSalary());
+        existingEmployee.setPhone(employeeDTO.getPhone());
+        existingEmployee.setEmail(employeeDTO.getEmail());
+        employeeRepository.save(existingEmployee);
+        return ResponseEntity.ok().build();
+    }
 
 }
 
