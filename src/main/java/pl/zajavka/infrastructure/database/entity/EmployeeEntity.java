@@ -1,5 +1,8 @@
 package pl.zajavka.infrastructure.database.entity;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import jakarta.persistence.*;
 
@@ -30,9 +33,11 @@ public class EmployeeEntity {
     @Column(name = "salary")
     private BigDecimal salary;
 
+    @Size(min = 7, max = 15)
+    @Pattern(regexp = "^[+]\\d{2}\\s\\d{3}\\s\\d{3}\\s\\d{3}$")
     @Column(name = "phone")
     private String phone;
-
+    @Email
     @Column(name = "email")
     private String email;
 }
