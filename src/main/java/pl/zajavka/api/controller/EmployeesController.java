@@ -76,5 +76,15 @@ class EmployeesController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping(EMPLOYEE_ID)
+    public ResponseEntity<?> deleteEmployee(@PathVariable Integer employeeId) {
+        try {
+            employeeRepository.deleteById(employeeId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }
 
