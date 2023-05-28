@@ -12,6 +12,7 @@ import pl.zajavka.api.mapper.EmployeeMapper;
 import pl.zajavka.infrastructure.database.entity.EmployeeEntity;
 import pl.zajavka.infrastructure.database.repository.EmployeeRepository;
 
+import java.math.BigDecimal;
 import java.net.URI;
 
 @RestController
@@ -22,6 +23,7 @@ class EmployeesController {
     public static final String BASE_PATH = "/employees";
     public static final String EMPLOYEE_ID = "/{employeeId}";
     public static final String EMPLOYEE_ID_RESULT = "/%s";
+    public static final String EMPLOYEE_UPDATE_SALARY = "/{employeeId}/salary";
     private EmployeeRepository employeeRepository;
     private EmployeeMapper employeeMapper;
 
@@ -84,6 +86,19 @@ class EmployeesController {
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PatchMapping(EMPLOYEE_UPDATE_SALARY)
+    public ResponseEntity<?> updateEmployeeSalary(
+            @PathVariable Integer employeeId,
+            @RequestParam(required = true) BigDecimal newSalary
+    ) {
+        EmployeeEntity existingEmployee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("EmployeeEntity not found, employeeId: [%s]", employeeId)));
+        existingEmployee.setSalary(newSalary);
+        employeeRepository.save(existingEmployee);
+        return ResponseEntity.ok().build();
     }
 
 }
