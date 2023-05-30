@@ -3,6 +3,7 @@ package pl.zajavka.api.controller;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -105,6 +106,18 @@ class EmployeesController {
         employeeRepository.save(existingEmployee);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping(value = "test-header")
+    public ResponseEntity<?> testHeader(
+            @RequestHeader(value = HttpHeaders.ACCEPT) MediaType accept,
+            @RequestHeader(value = "httpStatus", required = true) int httpStatus
+    ) {
+        return ResponseEntity
+                .status(httpStatus)
+                .header("x-my-header", accept.toString())
+                .body("Accepted: " + accept);
+    }
+
 
 }
 
