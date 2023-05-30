@@ -80,12 +80,17 @@ class EmployeesController {
 
     @DeleteMapping(EMPLOYEE_ID)
     public ResponseEntity<?> deleteEmployee(@PathVariable Integer employeeId) {
-        try {
-            employeeRepository.deleteById(employeeId);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+        EmployeeEntity existingEmployee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("EmployeeEntity not found, employeeId: [%s]", employeeId)));
+        employeeRepository.deleteById(existingEmployee.getEmployeeId());
+        return ResponseEntity.ok().build();
+//        try {
+//            employeeRepository.deleteById(employeeId);
+//            return ResponseEntity.ok().build();
+//        } catch (Exception e) {
+//            return ResponseEntity.notFound().build();
+//        }
     }
 
     @PatchMapping(EMPLOYEE_UPDATE_SALARY)
