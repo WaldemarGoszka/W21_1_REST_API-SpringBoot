@@ -1,8 +1,8 @@
-package pl.zajavka.api.mapper;
+package pl.zajavka.controller.dto;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
-import pl.zajavka.api.dto.EmployeeDTO;
+import pl.zajavka.controller.dto.EmployeeDTO;
 import pl.zajavka.infrastructure.database.entity.EmployeeEntity;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)

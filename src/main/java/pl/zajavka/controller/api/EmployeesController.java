@@ -1,4 +1,4 @@
-package pl.zajavka.api.controller;
+package pl.zajavka.controller.api;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -7,11 +7,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.zajavka.api.dto.EmployeeDTO;
-import pl.zajavka.api.dto.EmployeesDTO;
-import pl.zajavka.api.mapper.EmployeeMapper;
+import pl.zajavka.controller.dao.PetDAO;
+import pl.zajavka.controller.dto.EmployeeDTO;
+import pl.zajavka.controller.dto.EmployeesDTO;
+import pl.zajavka.controller.dto.EmployeeMapper;
 import pl.zajavka.infrastructure.database.entity.EmployeeEntity;
+import pl.zajavka.infrastructure.database.entity.PetEntity;
+import pl.zajavka.infrastructure.database.petstore.Pet;
 import pl.zajavka.infrastructure.database.repository.EmployeeRepository;
+import pl.zajavka.infrastructure.database.repository.PetRepository;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -25,8 +29,12 @@ class EmployeesController {
     public static final String EMPLOYEE_ID = "/{employeeId}";
     public static final String EMPLOYEE_ID_RESULT = "/%s";
     public static final String EMPLOYEE_UPDATE_SALARY = "/{employeeId}/salary";
+    public static final String EMPLOYEE_UPDATE_PET = "/{employeeId}/pet/{petId}";
     private EmployeeRepository employeeRepository;
     private EmployeeMapper employeeMapper;
+    private PetDAO petDAO;
+    private PetRepository petRepository;
+
 
     @GetMapping
     public EmployeesDTO employeesList() {
@@ -116,6 +124,26 @@ class EmployeesController {
                 .status(httpStatus)
                 .header("x-my-header", accept.toString())
                 .body("Accepted: " + accept);
+    }
+    @PatchMapping(EMPLOYEE_UPDATE_PET)
+    public ResponseEntity<?> updatePet(
+            @PathVariable Integer employeeId,
+            @PathVariable Integer petId)
+    {
+        EmployeeEntity existingEmployee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("EmployeeEntity not found, employeeId: [%s]", employeeId)));
+        Pet petFromStore = petDAO.getPet(Long.valueOf(petId))
+                .orElseThrow(() -> new RuntimeException(
+                        String.format("Pet with id: [%s] could not be retrieved.", petId)));
+        PetEntity newPet = PetEntity.builder()
+                .petStorePetId(petFromStore.getId())
+                .name(petFromStore.getName())
+                .status(petFromStore.getStatus())
+                .employee(existingEmployee)
+                .build();
+        petRepository.save(newPet);
+        return ResponseEntity.ok().build();
     }
 
 

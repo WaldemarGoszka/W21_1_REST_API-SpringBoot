@@ -7,6 +7,7 @@ import lombok.*;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Data
 @With
@@ -40,4 +41,7 @@ public class EmployeeEntity {
     @Email
     @Column(name = "email")
     private String email;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "employee")
+    private Set<PetEntity> pets;
+
 }
