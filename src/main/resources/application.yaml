@@ -2,6 +2,10 @@ server:
   port: 8190
   servlet:
     context-path: /zajavka
+api:
+  petStore:
+    url: https://petstore3.swagger.io/api/v3/
+
 
 spring:
   datasource:

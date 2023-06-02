@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -12,6 +13,8 @@ import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
+import pl.zajavka.springrest.infrastructure.petstore.ApiClient;
+import pl.zajavka.springrest.infrastructure.petstore.api.PetApi;
 import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
@@ -19,17 +22,12 @@ import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class WebClientConfiguration {
-    private static final String BASE_URL = "https://petstore3.swagger.io/api/v3/";
-    public static final int TIMEOUT = 5000; // 5 sec
+    @Value("${api.petStore.url}")
+    private String petStoreUrl;
+
 
     @Bean
-    public WebClient webClient(final ObjectMapper objectMapper) {
-        final var httpClient = HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, TIMEOUT)
-                .responseTimeout(Duration.ofMillis(TIMEOUT))
-                .doOnConnected(conn ->
-                        conn.addHandlerLast(new ReadTimeoutHandler(TIMEOUT, TimeUnit.MILLISECONDS))
-                                .addHandlerLast(new WriteTimeoutHandler(TIMEOUT, TimeUnit.MILLISECONDS)));
+    public ApiClient petStoreApiClient(final ObjectMapper objectMapper) {
         final var exchangeStrategies = ExchangeStrategies
                 .builder()
                 .codecs(configurer -> {
@@ -46,10 +44,17 @@ public class WebClientConfiguration {
                                             objectMapper,
                                             MediaType.APPLICATION_JSON));
                 }).build();
-        return WebClient.builder()
-                .baseUrl(BASE_URL)
+        final var webClient = WebClient.builder()
                 .exchangeStrategies(exchangeStrategies)
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();
+        ApiClient apiClient = new ApiClient(webClient);
+        apiClient.setBasePath(petStoreUrl);
+        return apiClient;
     }
+
+    @Bean
+    public PetApi petApi(final ObjectMapper objectMapper) {
+        return new PetApi(petStoreApiClient(objectMapper));
+    }
+
 }
